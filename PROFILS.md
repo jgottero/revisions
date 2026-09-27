@@ -67,7 +67,11 @@ Une fois quelqu'un entré, **le titre de la page le dit, et lui seul** :
 l'image et le prénom, sur lesquels on appuie pour repasser le téléphone.
 C'est écrit une fois pour toutes, au-dessus des écrans plutôt que dans
 l'un d'eux, donc cela ne se répète nulle part et cela suit l'enfant
-partout — y compris au milieu d'une série. Tant que personne n'est
+partout — **sauf au milieu d'une série**. Là, l'exercice prend la page
+entière : ni prénom ni cadre autour de la question, seulement le bouton
+« Changer de liste » ou « Changer d'exercice » en haut, et sur un
+téléphone le clavier de l'application, aussi large que l'écran, en bas.
+Le prénom revient dès qu'on quitte la série. Tant que personne n'est
 entré, le titre est celui de l'application et il n'y a personne à
 quitter.
 
