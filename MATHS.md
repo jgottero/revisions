@@ -39,8 +39,13 @@ maintenant des calculs **et** des mots, alors ce qui les mélange parle
 de questions, et chaque liste se compte dans sa propre monnaie — « 10
 calculs » pour une table, « 15 mots » pour les nombres en anglais.
 
-Dans les cinq calculs, le clavier s'ouvre en chiffres sur un téléphone
-(`inputmode="numeric"`). Les espaces et un point égaré sont pardonnés ;
+Dans les cinq calculs, comme pour un nombre entendu en anglais, un
+téléphone ou une tablette n'ouvre pas son propre clavier : l'application
+affiche un **pavé de chiffres** à elle, dix chiffres, une touche pour
+effacer et le seul bouton **Valider** de l'écran — rien de ce que le
+clavier du téléphone ajoute (espace, mots de passe, copier-coller). Sur
+un ordinateur, c'est le vrai clavier, et le bouton reste à côté de la
+case. Les espaces et un point égaré sont pardonnés ;
 « quatorze » écrit en lettres ne l'est pas — c'est un nombre qui est
 demandé.
 

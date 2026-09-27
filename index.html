@@ -126,6 +126,36 @@
   .topline h1 { flex: 1 1 auto; }
   .topline #wayout { margin-left: auto; }
 
+  /* ---- An exercise, on the whole page ----
+     While a question is asked, nothing else is: the name and the card
+     around the question go, and only the way out stays. The page is as
+     tall as the screen, so the on-screen keyboard can sit at the bottom,
+     under the thumbs, where a phone's own keyboard would be. */
+  body.in-round {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: 14px;
+    padding-bottom: 10px;
+    /* The card is gone but not its paper: a plain page, no grid showing
+       through the question or between the keys. */
+    background: var(--card);
+  }
+  body.in-round .sheet { display: flex; flex-direction: column; }
+  body.in-round .topline { margin-bottom: 8px; }
+  body.in-round .topline h1 { display: none; }
+  body.in-round #screen { flex: 1; display: flex; flex-direction: column; }
+  body.in-round #screen > .card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+  }
+  body.in-round #body { flex: 1; display: flex; flex-direction: column; }
+  body.in-round .keypad { margin-top: auto; padding-top: 22px; }
+
   .card {
     background: var(--card);
     border: 1px solid var(--card-edge);
@@ -388,6 +418,50 @@
   }
   .spell input:focus-visible { outline: 3px solid var(--focus); outline-offset: 1px; }
   .spell input:disabled { opacity: 0.7; }
+  /* ---- The on-screen keyboard ----
+     Twenty narrow columns, so that a row of nine letters can sit half a
+     key in from a row of ten, as on any keyboard. */
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 8px 4px;
+    /* The full width of the screen, whatever the page around it: every
+       pixel is a wider key and one fewer letter typed beside. */
+    width: calc(100vw - 8px);
+    margin: 22px 0 0 calc(50% - 50vw + 4px);
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  /* Ten figures need less room than twenty-six letters: on a tablet
+     they stop at a width a hand still spans. */
+  .keypad.digits {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    width: min(calc(100vw - 8px), 560px);
+    margin-left: calc(50% - min(calc(50vw - 4px), 280px));
+  }
+  .pad-key {
+    min-width: 0;
+    height: 50px;
+    padding: 0;
+    font: inherit;
+    font-size: 1.25rem;
+    color: var(--ink);
+    background: var(--card);
+    border: 1.5px solid var(--card-edge);
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    /* No waiting to see whether a tap was the first of two. */
+    touch-action: manipulation;
+  }
+  .keypad.digits .pad-key { height: 56px; font-size: 1.5rem; }
+  .pad-key:active { background: var(--card-edge); }
+  .pad-key svg { width: 24px; height: 24px; }
+  .pad-key.small { font-size: 0.9rem; color: var(--ink-soft); }
+  .keypad .pad-key.go { font-size: 1rem; font-weight: 700; background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .pad-key:disabled, #body:has(#typed:disabled) .pad-key { opacity: 0.45; }
   .diff {
     font-family: "Shantell Sans", "Comic Sans MS", cursive;
     font-size: 1.2rem;
@@ -1210,6 +1284,8 @@ function wayOutOf(where) {
    asked for and shown where profiles are chosen. Before anyone has been
    chosen there is nobody to name, so the title says where we are. */
 function renderWho() {
+  // An exercise takes the whole page: no name, no card, just the way out.
+  document.body.classList.toggle("in-round", showing === "round");
   const out = document.getElementById("wayout");
   const way = PROFILE ? wayOutOf(showing) : null;
   out.textContent = way ? way.says : "";
@@ -2429,6 +2505,74 @@ const mcq = {
   }
 };
 
+/* ---- The on-screen keyboard ----
+   A phone's own keyboard guesses the word being typed and offers it
+   whole: "to" is enough to see "tomorrow", and a dictation is no longer
+   one. No attribute makes every keyboard stop doing it, so where the
+   answer is typed with a finger the page brings a keyboard of its own
+   and the phone's is kept shut (inputmode="none"). It knows nothing but
+   letters, or nothing but figures, and carries the one Valider button.
+
+   A real keyboard guesses nothing, so a computer keeps it and the box
+   keeps its button beside it. A tablet with a keyboard plugged in can
+   use either: the box still takes what is typed. */
+const keypad = {
+  wanted() { return matchMedia("(pointer: coarse)").matches; },
+
+  key(value, label, span, extra) {
+    return '<button type="button" class="pad-key' + (extra && extra.small ? ' small' : '') + '"' +
+      ' data-key="' + value + '" style="grid-column: span ' + span + '"' +
+      (extra && extra.name ? ' aria-label="' + extra.name + '"' : '') + '>' + label + '</button>';
+  },
+
+  /* The submit button lives in the keyboard, outside the form, and
+     reaches it through its form attribute; it keeps the id every mode
+     already looks for, to turn it into "Recopier" or to disable it. */
+  html(kind, form) {
+    const key = keypad.key;
+    const row = chars => chars.split("").map(c => key(c, c, 2)).join("");
+    const gap = span => '<span style="grid-column: span ' + span + '"></span>';
+    const back = span => key("back",
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M21 5H9l-6 7 6 7h12z"/><path d="M17 9l-5 6M12 9l5 6"/></svg>',
+      span, { name: "Effacer" });
+    const go = span => '<button type="submit" class="pad-key go" id="check" form="' + form + '"' +
+      ' style="grid-column: span ' + span + '">Valider</button>';
+    const keys = kind === "digits"
+      ? row("123456789") + back(2) + key("0", "0", 2) + go(2)
+      : row("qwertyuiop") +
+        gap(1) + row("asdfghjkl") + gap(1) +
+        gap(3) + row("zxcvbnm") + back(3) +
+        key("'", "'", 2, { name: "Apostrophe" }) + key("-", "-", 2, { name: "Trait d'union" }) +
+        key(" ", "espace", 10, { small: true }) + go(6);
+    return '<div class="keypad ' + kind + '" id="keypad">' + keys + '</div>';
+  },
+
+  // Each key writes where the caret is, as a keyboard would.
+  wire(input) {
+    const pad = document.getElementById("keypad");
+    // A key never takes the focus: the caret stays in the box.
+    pad.addEventListener("mousedown", event => event.preventDefault());
+    // Safari only shows a key pressed down to a page that listens for touches.
+    pad.addEventListener("touchstart", () => {}, { passive: true });
+    pad.addEventListener("click", event => {
+      const button = event.target.closest("[data-key]");
+      if (!button || input.disabled) return;
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      if (button.dataset.key !== "back") {
+        input.setRangeText(button.dataset.key, start, end, "end");
+      } else if (start !== end) {
+        input.setRangeText("", start, end, "end");
+      } else if (start > 0) {
+        input.setRangeText("", start - 1, start, "end");
+      }
+      if (document.activeElement !== input) input.focus();
+    });
+  }
+};
+
 // ---- Mode 2: say the answer ----
 /* ---- Mode 4: hear it, write it ----
    Spelling is judged exactly: accents and case are ignored, letters are
@@ -2458,23 +2602,27 @@ const spell = {
 
   render() {
     const word = state.round[state.index].word;
+    const keys = keypad.wanted();
     document.getElementById("body").innerHTML =
       '<div class="actions" style="margin-top:0">' +
         '<button class="text" id="hear">Réécouter le mot</button>' +
       '</div>' +
       '<form id="spellForm" class="spell">' +
         '<input id="typed" type="text" lang="en" autocomplete="off" autocapitalize="none" ' +
+               (keys ? 'inputmode="none" ' : '') +
                'autocorrect="off" spellcheck="false" placeholder="Écris le mot en anglais" ' +
                'aria-label="Écris le mot en anglais">' +
-        '<button class="text primary" type="submit" id="check">Valider</button>' +
+        (keys ? '' : '<button class="text primary" type="submit" id="check">Valider</button>') +
       '</form>' +
       '<p class="verdict" id="verdict"></p>' +
       '<div class="actions">' +
         '<button class="text primary" id="next" hidden></button>' +
         '<button class="text" id="skip">Voir la réponse</button>' +
-      '</div>';
+      '</div>' +
+      (keys ? keypad.html("letters", "spellForm") : '');
 
     const input = document.getElementById("typed");
+    if (keys) keypad.wire(input);
     document.getElementById("hear").addEventListener("click", () => speak(spell.correctFor(word)));
     document.getElementById("skip").addEventListener("click", () => spell.settle(false, ""));
     document.getElementById("next").addEventListener("click", goNext);
@@ -2559,20 +2707,24 @@ const maths = {
 
   render() {
     const word = state.round[state.index].word;
+    const keys = keypad.wanted();
     document.getElementById("body").innerHTML =
       '<form id="sumForm" class="spell">' +
-        '<input id="typed" type="text" inputmode="numeric" pattern="[0-9]*" ' +
+        '<input id="typed" type="text" ' +
+               (keys ? 'inputmode="none" ' : 'inputmode="numeric" pattern="[0-9]*" ') +
                'autocomplete="off" autocorrect="off" spellcheck="false" ' +
                'placeholder="Ta réponse" aria-label="Ta réponse">' +
-        '<button class="text primary" type="submit" id="check">Valider</button>' +
+        (keys ? '' : '<button class="text primary" type="submit" id="check">Valider</button>') +
       '</form>' +
       '<p class="verdict" id="verdict"></p>' +
       '<div class="actions">' +
         '<button class="text primary" id="next" hidden></button>' +
         '<button class="text" id="skip">Voir la réponse</button>' +
-      '</div>';
+      '</div>' +
+      (keys ? keypad.html("digits", "sumForm") : '');
 
     const input = document.getElementById("typed");
+    if (keys) keypad.wire(input);
     document.getElementById("skip").addEventListener("click", () => maths.settle(false, ""));
     document.getElementById("next").addEventListener("click", goNext);
     document.getElementById("sumForm").addEventListener("submit", event => {
@@ -2658,25 +2810,29 @@ const count = {
 
   render() {
     const word = state.round[state.index].word;
+    const keys = keypad.wanted();
     document.getElementById("body").innerHTML =
       '<div class="actions" style="margin-top:0">' +
         '<button class="text" id="hear">Réécouter le nombre</button>' +
       '</div>' +
       '<form id="countForm" class="spell">' +
-        '<input id="typed" type="text" inputmode="numeric" pattern="[0-9]*" ' +
+        '<input id="typed" type="text" ' +
+               (keys ? 'inputmode="none" ' : 'inputmode="numeric" pattern="[0-9]*" ') +
                'autocomplete="off" autocorrect="off" spellcheck="false" ' +
                // Short enough to be read whole in the box it sits in.
                'placeholder="En chiffres" ' +
                'aria-label="Écris le nombre en chiffres">' +
-        '<button class="text primary" type="submit" id="check">Valider</button>' +
+        (keys ? '' : '<button class="text primary" type="submit" id="check">Valider</button>') +
       '</form>' +
       '<p class="verdict" id="verdict"></p>' +
       '<div class="actions">' +
         '<button class="text primary" id="next" hidden></button>' +
         '<button class="text" id="skip">Voir la réponse</button>' +
-      '</div>';
+      '</div>' +
+      (keys ? keypad.html("digits", "countForm") : '');
 
     const input = document.getElementById("typed");
+    if (keys) keypad.wire(input);
     document.getElementById("hear").addEventListener("click", () => speak(count.said(word)));
     document.getElementById("skip").addEventListener("click", () => count.settle(false, ""));
     document.getElementById("next").addEventListener("click", goNext);
