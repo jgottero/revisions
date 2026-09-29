@@ -253,6 +253,23 @@ const VOCABULARY = {
       ]
     },
     {
+      id: "weather",
+      title: "The weather",
+      subtitle: "La météo",
+      words: [
+        { fr: "Ensoleillé", en: ["sunny"] },
+        { fr: "Nuageux", en: ["cloudy"] },
+        { fr: "Pluvieux", en: ["rainy"] },
+        { fr: "Brumeux", en: ["foggy"] },
+        { fr: "Neigeux", en: ["snowy"] },
+        { fr: "Venteux", en: ["windy"] },
+        { fr: "Orageux", en: ["stormy"] },
+        { fr: "Froid", en: ["cold"] },
+        { fr: "Chaud (doux, bon)", en: ["warm"], avoid: ["hot"] },
+        { fr: "Chaud (très chaud)", en: ["hot"], avoid: ["warm"] }
+      ]
+    },
+    {
       /* ---- The younger one's English ----
          The CE2 learns the same numbers as their brother, but only to
          fifteen and only two ways: hear one and write the figure, or
