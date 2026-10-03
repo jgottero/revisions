@@ -75,6 +75,32 @@ const VOCABULARY = {
       ]
     },
     {
+      id: "school-supplies",
+      title: "School supplies",
+      subtitle: "Les fournitures scolaires — singulier et pluriel",
+      words: [
+        { fr: "Un sac à dos", en: ["a backpack"] },
+        { fr: "Des sacs à dos", en: ["backpacks"] },
+        { fr: "Une trousse", en: ["a pencil pouch"] },
+        { fr: "Des trousses", en: ["pencil pouches"] },
+        { fr: "Un bâton de colle", en: ["a glue stick"] },
+        { fr: "Des bâtons de colle", en: ["glue sticks"] },
+        { fr: "Un marqueur", en: ["a marker"] },
+        { fr: "Des marqueurs", en: ["markers"] },
+        { fr: "Un cahier", en: ["a notebook"] },
+        { fr: "Des cahiers", en: ["notebooks"] },
+        { fr: "Un surligneur", en: ["a highlighter"] },
+        { fr: "Des surligneurs", en: ["highlighters"] },
+        { fr: "Un crayon de couleur", en: ["a coloured pencil", "a colored pencil"] },
+        { fr: "Des crayons de couleur", en: ["coloured pencils", "colored pencils"] },
+        // Scissors has no singular form: count pairs instead.
+        { fr: "Une paire de ciseaux", en: ["a pair of scissors"] },
+        { fr: "Des paires de ciseaux", en: ["pairs of scissors"] },
+        { fr: "Un écouteur", en: ["an earbud"] },
+        { fr: "Des écouteurs", en: ["earbuds"] }
+      ]
+    },
+    {
       id: "rules",
       title: "School rules",
       subtitle: "Ce qui est interdit",
