@@ -52,7 +52,7 @@ const MATHS = (function () {
      c'est la forme apprise en classe, et c'est elle qui rend une table
      reconnaissable — « deux fois huit, seize ». */
   const TIMES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const TABLES = [2, 3, 4, 5];
+  const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   /* Comment retrouver le résultat quand on ne l'a pas su. Deux fois et
      trois fois, cela s'additionne et cela se voit. Au-delà, on s'appuie
