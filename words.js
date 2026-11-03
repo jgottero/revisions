@@ -296,6 +296,24 @@ const VOCABULARY = {
       ]
     },
     {
+      id: "in-the-classroom",
+      title: "In the classroom",
+      subtitle: "Dans la classe",
+      words: [
+        { fr: "Horloge", en: ["clock"] },
+        { fr: "Porte", en: ["door"] },
+        { fr: "Carte (géographique)", en: ["map"] },
+        { fr: "Drapeau", en: ["flag"] },
+        { fr: "Cahier de texte", en: ["homework diary"] },
+        { fr: "Chaise", en: ["chair"] },
+        { fr: "Etagère", en: ["shelf"] },
+        { fr: "Poubelle", en: ["bin"] },
+        { fr: "Ordinateur (PC)", en: ["computer"] },
+        { fr: "Ordinateur portable", en: ["laptop"] },
+        { fr: "Tableau blanc", en: ["whiteboard"] }
+      ]
+    },
+    {
       /* ---- The younger one's English ----
          The CE2 learns the same numbers as their brother, but only to
          fifteen and only two ways: hear one and write the figure, or
