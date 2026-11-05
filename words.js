@@ -343,6 +343,22 @@ const VOCABULARY = {
         { fr: "quatorze",  en: ["fourteen"],   answer: 14 },
         { fr: "quinze",    en: ["fifteen"],    answer: 15 }
       ]
+    },
+    {
+      id: "breakfast_ce2",
+      grade: "ce2",
+      title: "Le petit déjeuner en anglais",
+      subtitle: "Ce qu'on mange le matin",
+      ask: ["mcq", "mcqfr"],
+      noun: { one: "mot", many: "mots" },
+      words: [
+        { fr: "petit déjeuner", en: ["breakfast"] },
+        { fr: "saucisse",       en: ["sausage"] },
+        { fr: "œuf",            en: ["egg"] },
+        { fr: "champignon",     en: ["mushroom"] },
+        { fr: "haricot",        en: ["bean"] },
+        { fr: "repas",          en: ["meal"] }
+      ]
     }
   ]
 };
