@@ -314,6 +314,21 @@ const VOCABULARY = {
       ]
     },
     {
+      id: "school-subjects",
+      title: "School subjects",
+      subtitle: "Matières scolaires",
+      words: [
+        { fr: "Math", en: ["maths", "math", "mathematics"] },
+        { fr: "Littérature", en: ["literature"] },
+        { fr: "Science", en: ["science", "sciences"] },
+        { fr: "Anglais", en: ["English"] },
+        { fr: "Géographie", en: ["geography"] },
+        { fr: "Informatique", en: ["multimedia"] },
+        { fr: "EPS", en: ["physical education"] },
+        { fr: "Chorale", en: ["choir"] }
+      ]
+    },
+    {
       /* ---- The younger one's English ----
          The CE2 learns the same numbers as their brother, but only to
          fifteen and only two ways: hear one and write the figure, or
