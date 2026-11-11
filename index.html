@@ -457,6 +457,8 @@
     touch-action: manipulation;
   }
   .keypad.digits .pad-key { height: 56px; font-size: 1.5rem; }
+  .keypad.time .pad-key[data-key=" am"],
+  .keypad.time .pad-key[data-key=" pm"] { font-size: 1.25rem; font-weight: 700; }
   .pad-key:active { background: var(--card-edge); }
   .pad-key svg { width: 24px; height: 24px; }
   .pad-key.small { font-size: 0.9rem; color: var(--ink-soft); }
@@ -486,6 +488,7 @@
 <script src="cloud.js"></script>
 <script src="profiles.js"></script>
 <script src="maths.js"></script>
+<script src="clock.js"></script>
 
 <main class="sheet">
   <!-- Who is holding the telephone, said once and only here. -->
@@ -722,6 +725,12 @@ function keyLessons() {
       if (lesson.ask) word.ask = lesson.ask;
       // Likewise a list whose answers come in forms, for its wrong choices.
       if (lesson.forms) word.forms = true;
+      /* And a list of times: its words know they are times, and carry
+         the sentences a timetable question is made of. */
+      if (lesson.clock) {
+        word.clock = true;
+        word.sentences = lesson.sentences || [];
+      }
     });
   });
 }
@@ -1028,7 +1037,7 @@ function recordResult(word, success) {
   let gained = note.first
     ? POINTS.word + (success ? POINTS.correct : 0) +
       (state.asking === "say" || state.asking === "spell" ||
-       state.asking === "count" ? POINTS.speaking : 0)
+       state.asking === "count" || state.asking === "clock" ? POINTS.speaking : 0)
     : (success ? POINTS.again : 0);
   if (note.completed) {
     gained += POINTS.goal;
@@ -1168,7 +1177,8 @@ if (canSpeak) {
 function speak(text, button) {
   if (!canSpeak) return;
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
+  // A time is read "nine thirty A.M.", never "nine thirty am" like "I am".
+  const utterance = new SpeechSynthesisUtterance(CLOCK.aloud(text));
   if (englishVoice) utterance.voice = englishVoice;
   utterance.lang = englishVoice ? englishVoice.lang : "en-GB";
   utterance.rate = 0.85;
@@ -2260,11 +2270,14 @@ function startRound(lessonId) {
       : asked ? asked[at % asked.length]
       : state.mode;
     const question =
+      // A time picks its wrong choices among the mistakes it invites.
+      mode === "mcq" && word.clock ? CLOCK.choice(word) :
       mode === "mcq" ? buildForward(word, pool) :
       mode === "mcqfr" ? buildReverse(word, pool) :
+      mode === "sentence" ? CLOCK.sentence(word) :
       // Writing what is heard means writing it from the sound alone: the
       // French word would hand the answer over before the first letter.
-      mode === "spell" || mode === "count" ? { word, prompt: "" } :
+      mode === "spell" || mode === "count" || mode === "clock" ? { word, prompt: "" } :
       // Spoken aloud, and a sum, are both asked in writing.
       { word, prompt: word.fr };
     question.mode = mode;
@@ -2283,7 +2296,7 @@ function startRound(lessonId) {
 function askable(modes) {
   if (!englishVoice) pickVoice();
   if (englishVoice) return modes;
-  const left = modes.filter(one => one !== "count" && one !== "spell");
+  const left = modes.filter(one => one !== "count" && one !== "spell" && one !== "clock");
   return left.length ? left : ["mcq"];
 }
 
@@ -2308,9 +2321,11 @@ function buildForward(word, pool) {
     ? words.flatMap(w => w.en)
     : words.filter(w => w.forms).map(w => w.en[form])
   ).filter(a => a && !banned.has(a));
-  let others = answersOf(pool);
+  // A time is no wrong choice for a word: "2 pm" would give itself away.
+  const words = list => list.filter(w => !w.clock);
+  let others = answersOf(words(pool));
   // A very short list would not offer enough wrong answers on its own.
-  if (others.length < 3) others = answersOf(LESSONS.flatMap(l => l.words));
+  if (others.length < 3) others = answersOf(words(LESSONS.flatMap(l => l.words)));
   const distractors = shuffle([...new Set(others)]).slice(0, 3);
   return { word, prompt: word.fr, answer, options: shuffle([answer, ...distractors]) };
 }
@@ -2320,7 +2335,7 @@ function buildForward(word, pool) {
 function buildReverse(word, pool) {
   const prompt = shuffle(word.en)[0];
   const usable = candidates => candidates.filter(other =>
-    other.fr !== word.fr &&
+    other.fr !== word.fr && !other.clock &&
     !(other.avoid || []).includes(prompt) &&
     !other.en.includes(prompt)
   );
@@ -2370,6 +2385,7 @@ function showQuestion() {
   if (state.asking === "say") say.render();
   else if (state.asking === "spell") spell.render();
   else if (state.asking === "count") count.render();
+  else if (state.asking === "clock") clock.render();
   else if (state.asking === "maths") maths.render();
   else mcq.render();
 }
@@ -2403,7 +2419,8 @@ function settled(success) {
   stopMoving();
   if (!success) { offerNext(); return; }
   // Where the answer is read aloud, the pause is the length of the word.
-  const aloud = state.asking === "mcq" || state.asking === "mcqfr" || state.asking === "say";
+  const aloud = state.asking === "mcq" || state.asking === "mcqfr" ||
+    state.asking === "say" || state.asking === "sentence";
   moving = setTimeout(() => { moving = null; goNext(); },
     aloud ? SPOKEN_PAUSE : RIGHT_PAUSE);
 }
@@ -2412,7 +2429,8 @@ function nextLabel() {
   if (state.index === state.round.length - 1) return "Voir le score";
   // What comes next is what this question was: a CE2 who has just heard
   // an English number is not being handed another sum.
-  return state.asking === "maths" ? "Calcul suivant" : "Mot suivant";
+  if (state.asking === "maths") return "Calcul suivant";
+  return state.round[state.index].word.clock ? "Question suivante" : "Mot suivant";
 }
 
 function goNext() {
@@ -2491,6 +2509,15 @@ const mcq = {
           ? '<span class="also">Se dit aussi : ' + esc(synonyms.join(", ")) + '.</span>'
           : "") +
         levelNote(change);
+    } else if (question.word.clock) {
+      /* A time, or a timetable sentence: what was asked is the French
+         that was shown, and a mistake is followed by why it is am or pm. */
+      verdict.innerHTML =
+        (success ? "<b>Bravo.</b> " : "<b>Raté.</b> ") +
+        esc(question.said || question.word.fr) + " = " + esc(question.answer) +
+        (/[.!?]$/.test(question.answer) ? "" : ".") +
+        (success ? "" : '<span class="also">' + esc(CLOCK.how(question.word)) + '</span>') +
+        levelNote(change);
     } else {
       verdict.innerHTML =
         (success ? "<b>Bravo.</b> " : "<b>Raté.</b> ") +
@@ -2541,12 +2568,19 @@ const keypad = {
       ' style="grid-column: span ' + span + '">Valider</button>';
     const keys = kind === "digits"
       ? row("123456789") + back(2) + key("0", "0", 2) + go(2)
+      /* A time: the figures, the colon, and am and pm as whole keys —
+         each a word the pupil chooses, not two letters to spell. */
+      : kind === "time"
+      ? row("123456789") + key(":", ":", 2, { name: "Deux-points" }) + key("0", "0", 2) + back(2) +
+        key(" am", "am", 2) + key(" pm", "pm", 2) + go(2)
       : row("qwertyuiop") +
         gap(1) + row("asdfghjkl") + gap(1) +
         gap(3) + row("zxcvbnm") + back(3) +
         key("'", "'", 2, { name: "Apostrophe" }) + key("-", "-", 2, { name: "Trait d'union" }) +
         key(" ", "espace", 10, { small: true }) + go(6);
-    return '<div class="keypad ' + kind + '" id="keypad">' + keys + '</div>';
+    // The time keyboard is the figures' one with three more keys.
+    const look = kind === "time" ? "digits time" : kind;
+    return '<div class="keypad ' + look + '" id="keypad">' + keys + '</div>';
   },
 
   // Each key writes where the caret is, as a keyboard would.
@@ -2902,6 +2936,108 @@ const count = {
 
 };
 
+/* ---- Hear a time, write it ----
+   The sixième's time: "nine thirty A.M." is read out, and the pupil
+   writes 9:30 am, as the notebook does. The hour, the minutes and am or
+   pm must all be right; how it is typed is forgiven ("9.30am", "2:00
+   pm"). A wrong answer says what went wrong when it can — am or pm left
+   out, thirty heard as thirteen — and is copied out before the next. */
+const clock = {
+  render() {
+    const word = state.round[state.index].word;
+    const keys = keypad.wanted();
+    document.getElementById("body").innerHTML =
+      '<div class="actions" style="margin-top:0">' +
+        '<button class="text" id="hear">Réécouter l\'heure</button>' +
+      '</div>' +
+      '<form id="clockForm" class="spell">' +
+        '<input id="typed" type="text" lang="en" autocomplete="off" autocapitalize="none" ' +
+               (keys ? 'inputmode="none" ' : '') +
+               'autocorrect="off" spellcheck="false" placeholder="Ex. : 7:15 pm" ' +
+               'aria-label="Écris l\'heure en anglais, avec am ou pm">' +
+        (keys ? '' : '<button class="text primary" type="submit" id="check">Valider</button>') +
+      '</form>' +
+      '<p class="verdict" id="verdict"></p>' +
+      '<div class="actions">' +
+        '<button class="text primary" id="next" hidden></button>' +
+        '<button class="text" id="skip">Voir la réponse</button>' +
+      '</div>' +
+      (keys ? keypad.html("time", "clockForm") : '');
+
+    const input = document.getElementById("typed");
+    if (keys) keypad.wire(input);
+    document.getElementById("hear").addEventListener("click", () => speak(word.en[0]));
+    document.getElementById("skip").addEventListener("click", () => clock.settle(false, ""));
+    document.getElementById("next").addEventListener("click", goNext);
+    document.getElementById("clockForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const attempt = input.value.trim();
+      if (!attempt) return;
+      if (state.locked) clock.checkCopy(attempt);
+      else clock.settle(CLOCK.matches(word, attempt), attempt);
+    });
+
+    input.focus();
+    // Read on arrival: the time is only ever heard.
+    speak(word.en[0]);
+  },
+
+  settle(success, attempt) {
+    if (state.locked) return;
+    state.locked = true;
+    const word = state.round[state.index].word;
+    const answer = word.en[0];
+    const change = recordResult(word, success);
+    const verdict = document.getElementById("verdict");
+    const input = document.getElementById("typed");
+
+    if (success) {
+      verdict.innerHTML = "<b>C'est juste.</b> " + esc(answer) + " = " + esc(word.fr) + "." +
+        levelNote(change);
+      input.disabled = true;
+      document.getElementById("check").disabled = true;
+      document.getElementById("skip").hidden = true;
+      settled(true);
+    } else {
+      const hint = attempt ? CLOCK.hint(word, attempt) : "";
+      verdict.innerHTML =
+        (attempt ? "<b>Pas tout à fait.</b> Tu as écrit " + esc(attempt) + "." : "<b>La réponse :</b>") +
+        (hint ? '<span class="also">' + esc(hint) + '</span>' : "") +
+        '<span class="also">On a dit <b>' + esc(answer) + '</b> — ' + esc(CLOCK.how(word)) + '</span>' +
+        levelNote(change);
+      document.getElementById("skip").hidden = true;
+      // Writing it out is what unlocks the next one.
+      input.value = "";
+      input.placeholder = "Recopie : " + answer;
+      input.focus();
+      document.getElementById("check").textContent = "Recopier";
+      const pass = document.createElement("button");
+      pass.className = "text quiet";
+      pass.type = "button";
+      pass.id = "pass";
+      pass.textContent = "passer";
+      pass.addEventListener("click", offerNext);
+      document.querySelector(".actions").appendChild(pass);
+    }
+    markTrack(success ? "right" : "wrong");
+  },
+
+  checkCopy(attempt) {
+    const word = state.round[state.index].word;
+    if (CLOCK.matches(word, attempt)) {
+      document.getElementById("typed").disabled = true;
+      document.getElementById("check").disabled = true;
+      const pass = document.getElementById("pass");
+      if (pass) pass.remove();
+      settled(true);
+    } else {
+      document.getElementById("typed").value = "";
+      document.getElementById("typed").focus();
+    }
+  },
+
+};
+
 const say = {
   render() {
     document.getElementById("body").innerHTML =
@@ -3179,7 +3315,8 @@ function showScore() {
 // Keys 1 to 4 answer in both multiple-choice modes — and nowhere the
 // pupil writes their answer, where a digit is part of the answer itself.
 document.addEventListener("keydown", event => {
-  if (state.asking === "say" || state.asking === "spell" || state.asking === "maths") return;
+  if (state.asking === "say" || state.asking === "spell" || state.asking === "maths" ||
+      state.asking === "clock") return;
   if (event.key >= "1" && event.key <= "4") {
     const options = document.getElementById("options");
     const button = options && options.children[Number(event.key) - 1];

@@ -34,6 +34,9 @@
      noun:  what its items are called, when the subject's own word
             would be wrong — a CE2 works on calculs, but a list of
             English numbers is made of mots.
+     clock: its words are times ("14 h" = "2 pm"). clock.js works
+            out the wrong choices, the explanation and the
+            sentences; see the "time" list below.
    ===================================================================== */
 const VOCABULARY = {
   version: 1,
@@ -326,6 +329,80 @@ const VOCABULARY = {
         { fr: "Informatique", en: ["multimedia"] },
         { fr: "EPS", en: ["physical education"] },
         { fr: "Chorale", en: ["choir"] }
+      ]
+    },
+    {
+      id: "more-school-subjects",
+      title: "More school subjects",
+      subtitle: "Encore des matières scolaires",
+      words: [
+        { fr: "Histoire", en: ["history"], heard: ["histry", "his story"] },
+        { fr: "Arts plastiques", en: ["art"], heard: ["arts", "heart"] },
+        { fr: "Musique", en: ["music"], heard: ["musik", "musics"] },
+        // Each of the three is a science, but "science" is not their translation.
+        { fr: "Chimie", en: ["chemistry"], heard: ["chemestry", "kemistry"], avoid: ["science", "sciences"] },
+        { fr: "SVT", en: ["biology"], heard: ["biologie", "bio logy"], avoid: ["science", "sciences"] },
+        { fr: "Physique", en: ["physics"], heard: ["physic", "fizzics"], avoid: ["science", "sciences"] },
+        { fr: "Français", en: ["French"], heard: ["france", "frensh"] }
+      ]
+    },
+    {
+      /* The time as the notebook writes it: in figures, with am or pm,
+         and no "half past". The French side is the 24-hour clock, the
+         way a timetable says it in France — so the whole difficulty is
+         knowing when it is am and when it is pm.
+
+         Each question is asked one of three ways, drawn at random:
+           mcq       "14 h", pick "2 pm" out of four, the wrong ones
+                     being the usual mistakes (2 am, 4 pm, 9:13 for 9:30)
+           clock     the time is heard, and typed: 9:30 am
+           sentence  "Nous avons histoire à 9 h 30", pick the English
+                     sentence out of four
+         The French and the English must say the same time: the
+         explanation shown after a mistake is worked out from the French.
+
+         `sentences` are what the timetable sentences are made of. One
+         is drawn for each question; `from` and `to` keep one to the
+         hours it makes sense at (24-hour clock, both included). */
+      id: "time",
+      title: "What time is it?",
+      subtitle: "L'heure en anglais : am et pm",
+      clock: true,
+      ask: ["mcq", "clock", "sentence"],
+      noun: { one: "horaire", many: "horaires" },
+      sentences: [
+        { fr: "Nous avons histoire",       en: "We have history" },
+        { fr: "Nous avons physique",       en: "We have physics" },
+        { fr: "Nous avons chimie",         en: "We have chemistry" },
+        { fr: "Nous avons SVT",            en: "We have biology" },
+        { fr: "Nous avons français",       en: "We have French" },
+        { fr: "Nous avons anglais",        en: "We have English" },
+        { fr: "Nous avons maths",          en: "We have math" },
+        { fr: "Nous avons musique",        en: "We have music" },
+        { fr: "Nous avons arts plastiques", en: "We have art" },
+        { fr: "Nous avons géographie",     en: "We have geography" },
+        { fr: "Nous avons EPS",            en: "We have physical education" },
+        { fr: "Nous déjeunons",            en: "We have lunch", from: 11, to: 13 }
+      ],
+      words: [
+        // The six of the notebook first.
+        { fr: "8 h 30",  en: ["8:30 am"] },
+        { fr: "9 h 30",  en: ["9:30 am"] },
+        { fr: "11 h 40", en: ["11:40 am"] },
+        { fr: "13 h",    en: ["1 pm"] },
+        { fr: "14 h",    en: ["2 pm"] },
+        { fr: "15 h 10", en: ["3:10 pm"] },
+
+        // And the rest of a school day, from eight to five.
+        { fr: "8 h",     en: ["8 am"] },
+        { fr: "10 h 15", en: ["10:15 am"] },
+        { fr: "11 h",    en: ["11 am"] },
+        { fr: "12 h 30", en: ["12:30 pm"] },
+        { fr: "13 h 15", en: ["1:15 pm"] },
+        { fr: "14 h 50", en: ["2:50 pm"] },
+        { fr: "16 h",    en: ["4 pm"] },
+        { fr: "16 h 30", en: ["4:30 pm"] },
+        { fr: "17 h",    en: ["5 pm"] }
       ]
     },
     {

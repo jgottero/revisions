@@ -116,7 +116,7 @@ const shown = await page.evaluate(() => ({
 }));
 console.log('on screen:', JSON.stringify(shown));
 await page.screenshot({ path: SHOTS + 'v56-choice.png', fullPage: true });
-await page.click('#options .option:has-text("1st")');
+await page.click('#options .option:has(.word:text-is("1st"))');
 await page.waitForTimeout(300);
 const verdict = await page.evaluate(() => document.getElementById('verdict').textContent.replace(/\s+/g, ' ').trim());
 console.log('picking 1st:', verdict);
