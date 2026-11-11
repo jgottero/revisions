@@ -64,7 +64,12 @@ const menu = await page.evaluate(() => ({
 console.log('the CE2 menu:', JSON.stringify(menu.lists), '|', JSON.stringify(menu.counted.slice(-2)));
 if (menu.lists.indexOf('numbers_ce2') === -1) errors.push('the CE2 is not offered the English numbers');
 if (!/15 mots/.test(menu.counted.join(' '))) errors.push('the list of words is counted in calculs');
-if (!/74 questions/.test(menu.counted.join(' '))) {
+/* Every sum and every CE2 word, counted from the lists themselves: the
+   total grows with each table or list added, and a number written here
+   would go stale with it. */
+const everything = await page.evaluate(() =>
+  MATHS.all().length + LESSONS.filter(l => l.grade === 'ce2').reduce((n, l) => n + l.words.length, 0));
+if (menu.counted.join(' ').indexOf(everything + ' questions') === -1) {
   errors.push('sums and words mixed together are still called one or the other');
 }
 await page.screenshot({ path: SHOTS + 'v52-ce2-menu.png', fullPage: true });
