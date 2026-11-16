@@ -17,6 +17,11 @@
      avoid: answers that must never be offered as a wrong choice
             here, because they would in fact be correct too.
             Applies to both quiz directions.
+     traps: the mistakes a pupil makes on that word ("She doesn't
+            has"). The French → English quiz offers one or two of
+            them among its wrong choices, so that the choice is
+            between the right form and the wrong one, not only
+            between two words.
      answer: the figure a number is worth, for the list that is
             answered by writing one.
 
@@ -151,6 +156,50 @@ const VOCABULARY = {
         { fr: "Nous sommes", en: ["We are"] },
         { fr: "Vous êtes", en: ["You are"] },
         { fr: "Ils/Elles sont", en: ["They are"] }
+      ]
+    },
+    {
+      /* The notebook's table: affirmative, negative, interrogative.
+         Every person says "have", except the third person singular,
+         which says "has" — and in the negative and the question the
+         s moves onto the auxiliary: doesn't have, Does she have?
+         `traps` are the mistakes that rule invites, offered as wrong
+         choices: "She doesn't has", "Does she has?", "I has". */
+      id: "have",
+      title: "To have",
+      subtitle: "Verbe avoir : affirmative, négative, interrogative",
+      words: [
+        { fr: "J'ai", en: ["I have"], traps: ["I has"] },
+        { fr: "Je n'ai pas", en: ["I don't have"], traps: ["I doesn't have", "I don't has"] },
+        { fr: "Est-ce que j'ai ?", en: ["Do I have?"], traps: ["Does I have?", "Do I has?"] },
+
+        { fr: "Tu as", en: ["You have"], traps: ["You has"] },
+        { fr: "Tu n'as pas", en: ["You don't have"], traps: ["You doesn't have", "You don't has"] },
+        { fr: "Est-ce que tu as ?", en: ["Do you have?"], traps: ["Does you have?", "Do you has?"] },
+
+        { fr: "Il a (garçon ou animal)", en: ["He has"], traps: ["He have"] },
+        { fr: "Il n'a pas (garçon ou animal)", en: ["He doesn't have"], traps: ["He doesn't has", "He don't have"] },
+        { fr: "Est-ce qu'il a ? (garçon ou animal)", en: ["Does he have?"], traps: ["Does he has?", "Do he have?"] },
+
+        { fr: "Elle a (fille ou animal)", en: ["She has"], traps: ["She have"] },
+        { fr: "Elle n'a pas (fille ou animal)", en: ["She doesn't have"], traps: ["She doesn't has", "She don't have"] },
+        { fr: "Est-ce qu'elle a ? (fille ou animal)", en: ["Does she have?"], traps: ["Does she has?", "Do she have?"] },
+
+        { fr: "Il/Elle a (chose ou animal)", en: ["It has"], traps: ["It have"] },
+        { fr: "Il/Elle n'a pas (chose ou animal)", en: ["It doesn't have"], traps: ["It doesn't has", "It don't have"] },
+        { fr: "Est-ce qu'il/elle a ? (chose ou animal)", en: ["Does it have?"], traps: ["Does it has?", "Do it have?"] },
+
+        { fr: "Nous avons", en: ["We have"], traps: ["We has"] },
+        { fr: "Nous n'avons pas", en: ["We don't have"], traps: ["We doesn't have", "We don't has"] },
+        { fr: "Est-ce que nous avons ?", en: ["Do we have?"], traps: ["Does we have?", "Do we has?"] },
+
+        { fr: "Vous avez", en: ["You have"], traps: ["You has"] },
+        { fr: "Vous n'avez pas", en: ["You don't have"], traps: ["You doesn't have", "You don't has"] },
+        { fr: "Est-ce que vous avez ?", en: ["Do you have?"], traps: ["Does you have?", "Do you has?"] },
+
+        { fr: "Ils/Elles ont", en: ["They have"], traps: ["They has"] },
+        { fr: "Ils/Elles n'ont pas", en: ["They don't have"], traps: ["They doesn't have", "They don't has"] },
+        { fr: "Est-ce qu'ils/elles ont ?", en: ["Do they have?"], traps: ["Does they have?", "Do they has?"] }
       ]
     },
     {

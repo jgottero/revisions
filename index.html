@@ -2326,7 +2326,14 @@ function buildForward(word, pool) {
   let others = answersOf(words(pool));
   // A very short list would not offer enough wrong answers on its own.
   if (others.length < 3) others = answersOf(words(LESSONS.flatMap(l => l.words)));
-  const distractors = shuffle([...new Set(others)]).slice(0, 3);
+  /* A word with traps ("She doesn't has") offers one or two of them,
+     and the rest from the pool: the pupil has to tell the right form
+     from the wrong one, and still the right person from the others. */
+  const traps = shuffle((word.traps || []).filter(t => !banned.has(t)))
+    .slice(0, 1 + Math.floor(Math.random() * 2));
+  const rest = shuffle([...new Set(others)].filter(a => !traps.includes(a)))
+    .slice(0, 3 - traps.length);
+  const distractors = [...traps, ...rest];
   return { word, prompt: word.fr, answer, options: shuffle([answer, ...distractors]) };
 }
 
