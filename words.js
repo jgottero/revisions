@@ -455,6 +455,22 @@ const VOCABULARY = {
       ]
     },
     {
+      id: "family",
+      title: "Family members",
+      subtitle: "Les membres de la famille",
+      words: [
+        { fr: "Père", en: ["father"], heard: ["farther", "fathers"] },
+        { fr: "Mère", en: ["mother"], heard: ["mothers", "mudder"] },
+        { fr: "Fils", en: ["son"], heard: ["sun", "sons"] },
+        { fr: "Fille", en: ["daughter"], heard: ["dotter", "doughter", "daughters"] },
+        { fr: "Oncle", en: ["uncle"], heard: ["ankle", "uncles"] },
+        { fr: "Cousin / cousine", en: ["cousin"], heard: ["cousins", "cozen"] },
+        // One word in English, with no hyphen: "grand mother" is heard, not written.
+        { fr: "Grand-mère", en: ["grandmother"], heard: ["grand mother", "grandmothers"] },
+        { fr: "Grand-père", en: ["grandfather"], heard: ["grand father", "grandfathers"] }
+      ]
+    },
+    {
       /* ---- The younger one's English ----
          The CE2 learns the same numbers as their brother, but only to
          fifteen and only two ways: hear one and write the figure, or
