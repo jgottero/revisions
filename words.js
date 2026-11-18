@@ -516,6 +516,21 @@ const VOCABULARY = {
         { fr: "haricot",        en: ["bean"] },
         { fr: "repas",          en: ["meal"] }
       ]
+    },
+    {
+      id: "liberty_ce2",
+      grade: "ce2",
+      title: "La statue de la Liberté en anglais",
+      subtitle: "Un cadeau, un symbole de liberté",
+      ask: ["mcq", "mcqfr"],
+      noun: { one: "mot", many: "mots" },
+      words: [
+        { fr: "un cadeau",   en: ["a gift"] },
+        { fr: "population",  en: ["people"] },
+        { fr: "un symbole",  en: ["an icon"] },
+        { fr: "offrir",      en: ["to offer"] },
+        { fr: "liberté",     en: ["freedom"] }
+      ]
     }
   ]
 };
