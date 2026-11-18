@@ -51,6 +51,37 @@ const look = page => page.evaluate(() => {
   };
 });
 
+// The keyboard has letters, the apostrophe, the hyphen and space, and
+// nothing else: "Does it have?" is tapped out without its question mark,
+// which the marking ignores anyway, as it ignores every punctuation mark.
+const keyable = text => text.toLowerCase().replace(/[^a-z' -]/g, '').trim();
+
+/* Makes sure the question on screen is asked in a mode, taking one further
+   down the round if need be. A list that names its own modes keeps them in
+   the mix of every list ("What time is it?" is a choice, a clock or a
+   sentence), so the draw could otherwise land on a question with no
+   keyboard at all. */
+const askNow = async (page, mode) => {
+  const ok = await page.evaluate(mode => {
+    if (state.round[state.index].mode === mode) return true;
+    const at = state.round.findIndex((q, i) => i > state.index && q.mode === mode);
+    if (at < 0) return false;
+    state.round.splice(state.index, 0, state.round.splice(at, 1)[0]);
+    renderShell();
+    showQuestion();
+    return true;
+  }, mode);
+  if (!ok) errors.push('the round has no question left asked in ' + mode);
+  await page.waitForTimeout(300);
+};
+
+// Opens the mix of every list, on a question asked in that mode.
+const openMix = async (page, mode) => {
+  await page.click('[data-lesson="*"]');
+  await page.waitForTimeout(300);
+  await askNow(page, mode);
+};
+
 // Types an answer the way a finger would, one key after another.
 const tapOut = async (page, text) => {
   for (const c of text) await page.tap('#keypad [data-key="' + c + '"]');
@@ -61,8 +92,7 @@ const desk = await open({ viewport: { width: 900, height: 900 } });
 await desk.evaluate(() => startAs(PROFILES.create('Léo', '6eme').id));
 await desk.waitForTimeout(300);
 await desk.evaluate(() => { state.mode = 'spell'; renderMenu(); });
-await desk.click('[data-lesson="*"]');
-await desk.waitForTimeout(300);
+await openMix(desk, 'spell');
 const onDesk = await look(desk);
 console.log('dictation on a computer:', JSON.stringify(onDesk));
 if (onDesk.keypad) errors.push('a computer is shown the on-screen keyboard');
@@ -75,8 +105,7 @@ console.log('a finger for a pointer:', await phone.evaluate(() => matchMedia('(p
 await phone.evaluate(() => startAs(PROFILES.create('Léa', '6eme').id));
 await phone.waitForTimeout(300);
 await phone.evaluate(() => { state.mode = 'spell'; renderMenu(); });
-await phone.click('[data-lesson="*"]');
-await phone.waitForTimeout(300);
+await openMix(phone, 'spell');
 
 const letters = await look(phone);
 console.log('dictation on a phone:', JSON.stringify(letters));
@@ -90,7 +119,7 @@ if (letters.wide > 390) errors.push('the keyboard pushes the page sideways: ' + 
 await phone.screenshot({ path: SHOTS + 'v57-letters.png', fullPage: true });
 
 // The right word, typed key by key, is right.
-const word = await phone.evaluate(() => state.round[state.index].word.en[0].toLowerCase());
+const word = keyable(await phone.evaluate(() => state.round[state.index].word.en[0]));
 await tapOut(phone, word);
 const typed = await phone.evaluate(() => document.getElementById('typed').value);
 console.log('tapped out:', JSON.stringify(word), '->', JSON.stringify(typed));
@@ -106,6 +135,8 @@ if (await phone.evaluate(() => document.getElementById('typed').value) !== word)
   errors.push('the keys still write in an answered box');
 }
 await phone.waitForTimeout(1600);
+// The round has moved on by itself; the next word is a dictation too.
+await askNow(phone, 'spell');
 
 // A key writes where the caret is, and delete takes the letter before it.
 const caret = await phone.evaluate(() => {
@@ -137,7 +168,7 @@ const copy = await phone.evaluate(() => ({
 }));
 console.log('after a wrong word:', JSON.stringify(copy));
 if (copy.says !== 'Recopier') errors.push('the keyboard\'s button does not ask to copy out');
-const answer = await phone.evaluate(() => state.round[state.index].word.en[0].toLowerCase());
+const answer = keyable(await phone.evaluate(() => state.round[state.index].word.en[0]));
 await tapOut(phone, answer);
 await phone.tap('#check');
 await phone.waitForTimeout(300);
@@ -189,8 +220,7 @@ if (!/digits/.test(heard.keypad || '') || heard.submits !== 1 || heard.checkSend
 await phone.evaluate(() => startAs(PROFILES.create('Léa', '6eme').id));
 await phone.waitForTimeout(300);
 await phone.evaluate(() => { state.mode = 'spell'; renderMenu(); });
-await phone.click('[data-lesson="*"]');
-await phone.waitForTimeout(300);
+await openMix(phone, 'spell');
 const page = () => phone.evaluate(() => {
   const card = document.querySelector('#screen > .card');
   const pad = document.getElementById('keypad');
@@ -219,8 +249,7 @@ await phone.screenshot({ path: SHOTS + 'v57-whole-page.png' });
 
 // The multiple choice keeps its small numbers beside each word.
 await phone.evaluate(() => { state.mode = 'mcq'; renderMenu(); });
-await phone.click('[data-lesson="*"]');
-await phone.waitForTimeout(300);
+await openMix(phone, 'mcq');
 const number = await phone.evaluate(() => {
   const one = document.querySelector('.option .key');
   return { border: getComputedStyle(one).borderLeftWidth, height: one.getBoundingClientRect().height };
