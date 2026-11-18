@@ -467,7 +467,15 @@ const VOCABULARY = {
         { fr: "Cousin / cousine", en: ["cousin"], heard: ["cousins", "cozen"] },
         // One word in English, with no hyphen: "grand mother" is heard, not written.
         { fr: "Grand-mère", en: ["grandmother"], heard: ["grand mother", "grandmothers"] },
-        { fr: "Grand-père", en: ["grandfather"], heard: ["grand father", "grandfathers"] }
+        { fr: "Grand-père", en: ["grandfather"], heard: ["grand father", "grandfathers"] },
+        // An irregular plural: "childs" and "childrens" are the mistakes to catch.
+        { fr: "Enfants", en: ["children"], heard: ["childrens", "chilldren"], traps: ["childs", "childrens"] },
+        // Here the new husband of one's mother, as the notebook has it (it can also mean father-in-law).
+        { fr: "Beau-père", en: ["stepfather"], heard: ["step father", "stepfathers"] },
+        { fr: "Tante", en: ["aunt"], heard: ["aunts", "ant"] },
+        { fr: "Enfant unique", en: ["only child"], heard: ["only chiled"] },
+        { fr: "Époux (le mari)", en: ["husband"], heard: ["husbands", "has band"] },
+        { fr: "Épouse (la femme)", en: ["wife"], heard: ["wives", "wifes"] }
       ]
     },
     {

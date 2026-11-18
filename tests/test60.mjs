@@ -1,8 +1,9 @@
 /* Family members.
 
    The sixième's notebook: father, mother, son, daughter, uncle, cousin,
-   grandmother, grandfather. This suite checks that the list is on the
-   sixième's menu with its eight words, that a question draws four
+   grandmother, grandfather, then children, stepfather, aunt, only child,
+   husband and wife. This suite checks that the list is on the sixième's
+   menu with its fourteen words, that "childs" is offered as a trap, that a question draws four
    different choices from it, and that the compound words are spelt as
    one: "grandmother", never "grand-mother" or "grand mother". */
 import { chromium } from 'playwright';
@@ -28,7 +29,7 @@ await page.waitForTimeout(700);
 await page.evaluate(() => startAs(PROFILES.create('Léo', '6eme').id));
 await page.waitForTimeout(300);
 
-// ---- the list is on the sixième's menu, with the notebook's eight words ----
+// ---- the list is on the sixième's menu, with the notebook's fourteen words ----
 const menu = await page.evaluate(() =>
   Array.from(document.querySelectorAll('[data-lesson]')).map(b => b.dataset.lesson));
 console.log('the sixième menu:', JSON.stringify(menu));
@@ -38,10 +39,12 @@ const words = await page.evaluate(() =>
   LESSONS.find(l => l.id === 'family').words.map(w => w.fr + '=' + w.en[0]));
 console.log('family members:', JSON.stringify(words));
 for (const pair of ['Père=father', 'Mère=mother', 'Fils=son', 'Fille=daughter', 'Oncle=uncle',
-  'Cousin / cousine=cousin', 'Grand-mère=grandmother', 'Grand-père=grandfather']) {
+  'Cousin / cousine=cousin', 'Grand-mère=grandmother', 'Grand-père=grandfather',
+  'Enfants=children', 'Beau-père=stepfather', 'Tante=aunt', 'Enfant unique=only child',
+  'Époux (le mari)=husband', 'Épouse (la femme)=wife']) {
   if (words.indexOf(pair) === -1) errors.push('missing word ' + pair);
 }
-if (words.length !== 8) errors.push('the list should hold 8 words, not ' + words.length);
+if (words.length !== 14) errors.push('the list should hold 14 words, not ' + words.length);
 
 // ---- every question offers four different choices, one of them right ----
 const bad = await page.evaluate(() => {
@@ -58,6 +61,20 @@ const bad = await page.evaluate(() => {
   return [...new Set(found)];
 });
 if (bad.length) errors.push(...bad);
+
+// ---- "Enfants" offers a wrong plural among its choices ----
+const trapped = await page.evaluate(() => {
+  const pool = LESSONS.find(l => l.id === 'family').words;
+  const children = pool.find(w => w.fr === 'Enfants');
+  let seen = 0;
+  for (let i = 0; i < 50; i++) {
+    const q = buildForward(children, pool);
+    if (q.options.some(o => o === 'childs' || o === 'childrens')) seen++;
+  }
+  return seen;
+});
+console.log('"Enfants" questions offering childs/childrens:', trapped, '/ 50');
+if (trapped < 50) errors.push('"Enfants" does not always offer a wrong plural');
 
 // ---- the dictation wants the compound words in one piece ----
 await page.evaluate(() => { state.mode = 'spell'; startRound('family'); });
